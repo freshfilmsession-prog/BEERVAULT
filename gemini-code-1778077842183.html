@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BeerVault Pro | Full View</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #ffb100;
+            --bg: #0a0a0a;
+            --surface: #1a1a1a;
+            --radius: 28px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: white;
+            margin: 0; padding-bottom: 120px;
+        }
+
+        /* --- HEADER --- */
+        header { padding: 30px 20px; text-align: center; background: #000; }
+        h1 { margin: 0; font-size: 1.5rem; letter-spacing: 2px; }
+        h1 span { color: var(--accent); }
+
+        /* --- STATS DASHBOARD --- */
+        .stats-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px; padding: 20px; margin-top: -10px;
+        }
+        .stat-card {
+            background: var(--surface); padding: 12px; border-radius: 18px;
+            text-align: center; border: 1px solid #333;
+        }
+        .stat-card small { display: block; font-size: 0.6rem; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-card b { font-size: 1.1rem; }
+
+        /* --- LISTADO --- */
+        .beer-container { padding: 0 20px; display: flex; flex-direction: column; gap: 25px; }
+
+        .beer-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* CONTENEDOR DE IMAGEN COMPLETA */
+        .img-frame {
+            width: 100%;
+            height: 350px; /* Altura generosa para ver bien la botella */
+            background: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Efecto de fondo desenfocado para que no haya huecos vacíos */
+        .img-bg-blur {
+            position: absolute;
+            width: 110%; height: 110%;
+            object-fit: cover;
+            filter: blur(20px) brightness(0.4);
+            opacity: 0.6;
+            z-index: 1;
+        }
+
+        .card-img-main {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* AQUÍ ESTÁ EL TRUCO: IMAGEN SIEMPRE COMPLETA */
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-body { padding: 25px; }
+        .card-title { font-size: 1.6rem; font-weight: 800; margin: 0 0 5px 0; color: #fff; }
+        .card-style { color: var(--accent); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        .tech-box {
+            display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;
+        }
+        .tag-info {
+            background: rgba(255,255,255,0.05);
+            padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; border: 1px solid #333;
+        }
+        .tag-info b { color: var(--accent); }
+
+        .notes-area {
+            background: #111; padding: 15px; border-radius: 15px;
+            font-size: 0.9rem; color: #ccc; margin-bottom: 20px;
+            border-left: 3px solid var(--accent); font-style: italic;
+        }
+
+        /* CONTROLES GIGANTES PARA MÓVIL */
+        .controls-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #000; padding: 12px; border-radius: 20px;
+        }
+        .btn-qty {
+            width: 55px; height: 55px; border-radius: 18px; border: none;
+            background: #252525; color: white; font-size: 1.8rem; font-weight: bold;
+        }
+        .btn-qty:active { background: var(--accent); color: black; }
+        .qty-num { font-size: 2rem; font-weight: 900; }
+
+        /* --- MODAL --- */
+        #modal {
+            position: fixed; inset: 0; background: #000; display: none;
+            flex-direction: column; z-index: 1000; padding: 30px 20px; overflow-y: auto;
+        }
+        .form-label { color: var(--accent); font-size: 0.7rem; font-weight: 800; margin-bottom: 8px; display: block; }
+        input, select, textarea {
+            width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 15px;
+            border-radius: 15px; color: white; margin-bottom: 20px; font-size: 1rem;
+        }
+
+        .btn-save {
+            background: var(--accent); color: #000; border: none; padding: 20px;
+            border-radius: 20px; font-weight: 800; width: 100%; font-size: 1.1rem;
+        }
+
+        .fab {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: black; padding: 18px 45px;
+            border-radius: 50px; border: none; font-weight: 900; z-index: 100;
+            box-shadow: 0 10px 40px rgba(255,177,0,0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <header><h1>BEER<span>VAULT</span></h1></header>
+
+    <div class="stats-grid">
+        <div class="stat-card"><small>Tipos</small><b id="st-ref">0</b></div>
+        <div class="stat-card"><small>Botellas</small><b id="st-units">0</b></div>
+        <div class="stat-card"><small>Litros</small><b id="st-liters">0.0</b></div>
+    </div>
+
+    <div class="beer-container" id="beer-list"></div>
+
+    <button class="fab" onclick="openM()">+ AÑADIR CERVEZA</button>
+
+    <!-- Modal Full Screen -->
+    <div id="modal">
+        <h2 style="font-size: 2rem; margin: 0 0 30px 0;">Nueva Entrada</h2>
+        
+        <label class="form-label">FOTO COMPLETA</label>
+        <input type="file" id="f-img" accept="image/*">
+
+        <label class="form-label">NOMBRE DE LA CERVEZA</label>
+        <input type="text" id="f-name" placeholder="Ej. Westvleteren 12">
+
+        <label class="form-label">ESTILO</label>
+        <input type="text" id="f-style" placeholder="Ej. Belgian Strong Ale">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label class="form-label">UNIDADES</label>
+                <input type="number" id="f-qty" value="1">
+            </div>
+            <div>
+                <label class="form-label">TAMAÑO</label>
+                <select id="f-size">
+                    <option value="0.33">33 cl</option>
+                    <option value="0.375">37.5 cl</option>
+                    <option value="0.44">44 cl</option>
+                    <option value="0.50">50 cl</option>
+                    <option value="0.75">75 cl</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label class="form-label">% ALCOHOL</label>
+                <input type="number" step="0.1" id="f-abv" placeholder="10.2">
+            </div>
+            <div>
+                <label class="form-label">IBU</label>
+                <input type="number" id="f-ibu" placeholder="30">
+            </div>
+        </div>
+
+        <label class="form-label">FECHA EMBOTELLADO</label>
+        <input type="text" id="f-date" placeholder="Enero 2026">
+
+        <label class="form-label">NOTAS PERSONALES</label>
+        <textarea id="f-notes" rows="3" placeholder="Sabor, aroma..."></textarea>
+
+        <button class="btn-save" onclick="saveBeer()">GUARDAR EN LA BODEGA</button>
+        <button onclick="closeM()" style="background:none; border:none; color:#666; width:100%; margin-top:20px; font-weight:bold;">CANCELAR</button>
+    </div>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('beerVault_v3')) || [];
+
+        function openM() { document.getElementById('modal').style.display='flex'; }
+        function closeM() { document.getElementById('modal').style.display='none'; }
+
+        function saveBeer() {
+            const name = document.getElementById('f-name').value;
+            const file = document.getElementById('f-img').files[0];
+            if(!name || !file) return alert("Nombre y Foto son obligatorios");
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const beer = {
+                    id: Date.now(),
+                    name: name,
+                    style: document.getElementById('f-style').value || "Standard",
+                    qty: parseInt(document.getElementById('f-qty').value) || 1,
+                    size: parseFloat(document.getElementById('f-size').value),
+                    abv: document.getElementById('f-abv').value,
+                    ibu: document.getElementById('f-ibu').value,
+                    date: document.getElementById('f-date').value,
+                    notes: document.getElementById('f-notes').value,
+                    img: e.target.result
+                };
+                db.push(beer);
+                render();
+                closeM();
+                document.querySelectorAll('input, textarea').forEach(i => i.value = '');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateQty(id, delta) {
+            const idx = db.findIndex(b => b.id === id);
+            if(idx !== -1) {
+                db[idx].qty += delta;
+                if(db[idx].qty <= 0) db.splice(idx, 1);
+                render();
+            }
+        }
+
+        function render() {
+            localStorage.setItem('beerVault_v3', JSON.stringify(db));
+            const list = document.getElementById('beer-list');
+            list.innerHTML = '';
+            let u=0, l=0;
+
+            db.forEach(beer => {
+                u += beer.qty;
+                l += (beer.qty * beer.size);
+
+                list.innerHTML += `
+                    <div class="beer-card">
+                        <div class="img-frame">
+                            <img src="${beer.img}" class="img-bg-blur">
+                            <img src="${beer.img}" class="card-img-main">
+                        </div>
+                        <div class="card-body">
+                            <span class="card-style">${beer.style}</span>
+                            <h2 class="card-title">${beer.name}</h2>
+                            
+                            <div class="tech-box">
+                                <div class="tag-info">Format: <b>${beer.size*100}cl</b></div>
+                                ${beer.abv ? `<div class="tag-info">ABV: <b>${beer.abv}%</b></div>` : ''}
+                                ${beer.ibu ? `<div class="tag-info">IBU: <b>${beer.ibu}</b></div>` : ''}
+                                ${beer.date ? `<div class="tag-info">📅 <b>${beer.date}</b></div>` : ''}
+                            </div>
+
+                            ${beer.notes ? `<div class="notes-area">${beer.notes}</div>` : ''}
+
+                            <div class="controls-row">
+                                <button class="btn-qty" onclick="updateQty(${beer.id}, -1)">-</button>
+                                <span class="qty-num">${beer.qty}</span>
+                                <button class="btn-qty" onclick="updateQty(${beer.id}, 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('st-ref').innerText = db.length;
+            document.getElementById('st-units').innerText = u;
+            document.getElementById('st-liters').innerText = l.toFixed(1);
+        }
+
+        render();
+    </script>
+</body>
+</html>
